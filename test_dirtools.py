@@ -11,7 +11,7 @@ try:
     import fake_filesystem
     import fake_filesystem_shutil
 except ImportError:
-    print "You must install pyfakefs in order to run the test suite."
+    print("You must install pyfakefs in order to run the test suite.")
 
 import dirtools
 
@@ -131,13 +131,13 @@ class TestDirtools(unittest.TestCase):
             shutil.rmtree(test_dir)
         os.mkdir(test_dir)
 
-        with open(os.path.join(test_dir, 'file1'), 'w') as f:
+        with open(os.path.join(test_dir, 'file1'), 'wb') as f:
             f.write(os.urandom(2 ** 10))
 
         with open(os.path.join(test_dir, 'file2.pyc'), 'w') as f:
             f.write('excluded')
         os.mkdir(os.path.join(test_dir, 'dir1'))
-        with open(os.path.join(test_dir, 'dir1/file1'), 'w') as f:
+        with open(os.path.join(test_dir, 'dir1/file1'), 'wb') as f:
             f.write(os.urandom(2 ** 10))
 
         cdir = dirtools.Dir(test_dir)

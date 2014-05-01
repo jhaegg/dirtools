@@ -145,7 +145,7 @@ class Dir(object):
         shadir = hashlib.sha256()
         for f in self.files():
             try:
-                shadir.update(str(index_func(os.path.join(self.path, f))))
+                shadir.update(index_func(os.path.join(self.path, f)).encode())
             except (IOError, OSError):
                 pass
         return shadir.hexdigest()
@@ -330,8 +330,8 @@ class DirState(object):
         for f in self._dir.iterfiles():
             try:
                 index[f] = self.index_cmp(os.path.join(self._dir.path, f))
-            except Exception, exc:
-                print f, exc
+            except Exception as exc:
+                print(f, exc)
         return index
 
     def __sub__(self, other):
