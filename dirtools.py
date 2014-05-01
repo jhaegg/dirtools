@@ -119,19 +119,25 @@ class Dir(object):
     :param excludes: List of additionals patterns for exclusion,
         by default: ['.git/', '.hg/', '.svn/']
 
+    :param directory filter: Function for filtering unwanted directories
+        based on user rules. Should return False if directory should be
+        ignored, by default: lambda root, dirs, files: True
+
     """
     def __init__(self, directory=".", exclude_file=".exclude",
-                 excludes=['.git/', '.hg/', '.svn/']):
+                 excludes=('.git/', '.hg/', '.svn/'),
+                 directory_filter=lambda root, dirs, files: True):
         if not os.path.isdir(directory):
             raise TypeError("Directory must be a directory.")
         self.directory = os.path.basename(directory)
         self.path = os.path.abspath(directory)
         self.parent = os.path.dirname(self.path)
         self.exclude_file = os.path.join(self.path, exclude_file)
-        self.patterns = excludes
+        self.patterns = list(excludes)
         if os.path.isfile(self.exclude_file):
             self.patterns.extend(load_patterns(self.exclude_file))
         self.globster = Globster(self.patterns)
+        self.directory_filter=directory_filter
 
     def hash(self, index_func=os.path.getmtime):
         """ Hash for the entire directory (except excluded files) recursively.
@@ -247,10 +253,12 @@ class Dir(object):
         (yields a 3-tuple (dirpath, dirnames, filenames)
         except it exclude all files/directories on the fly. """
         for root, dirs, files in os.walk(self.path, topdown=True):
-            # TODO relative walk, recursive call if root excluder found???
-            #root_excluder = get_root_excluder(root)
+            # Use directory_filter function to check if root directory should be ignored
+            if not self.directory_filter(root, list(dirs), files):
+                continue
+
             ndirs = []
-            # First we exclude directories
+            # Then we exclude directories
             for d in list(dirs):
                 if self.is_excluded(os.path.join(root, d)):
                     dirs.remove(d)

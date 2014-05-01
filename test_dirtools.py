@@ -64,6 +64,23 @@ class TestDirtools(unittest.TestCase):
                                  "dir1/subdir1/.project",
                                  "dir2/file_dir2"]))
 
+    def testDirectoryFilter(self):
+        """ Check that directory_filter causes directories to be excluded based on rule """
+        def project_filter(root, dirs, files):
+            if ".project" in files:
+                return False
+            else:
+                return True
+
+        dir_filter = dirtools.Dir('/test_dirtools', directory_filter=project_filter)
+
+        self.assertEqual(sorted(dir_filter.files()),
+                         sorted(["file1",
+                                 "file2",
+                                 "file3.py",
+                                 ".exclude",
+                                 "dir2/file_dir2"]))
+
     def testFilesWithPatterns(self):
         """ Check that Dir.files return all files matching the pattern, except those excluded. """
         self.assertEqual(sorted(self.dir.files("*.py")),
